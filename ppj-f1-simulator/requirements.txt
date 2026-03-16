@@ -1,0 +1,2 @@
+# Python dependencies for f1_simulator
+# Currently uses only the Python standard library.

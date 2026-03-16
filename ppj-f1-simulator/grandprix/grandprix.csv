@@ -1,0 +1,25 @@
+track_name,length_km,corners,laps,track_type,straight_mode_zones,overtake_zones,longest_straight_m,avg_straight_length_m,overtake_difficulty,top_speed_kmh,braking_zones
+Albert Park,5.303,16,58,semi-permanent,3,2,850,420,3,325,6
+Shanghai,5.451,16,56,permanent,2,2,1170,500,3,335,7
+Suzuka,5.807,18,53,permanent,1,1,900,350,4,320,6
+Bahrain,5.412,15,57,permanent,3,3,1090,480,2,330,8
+Jeddah,6.174,27,50,street,2,2,1000,520,3,340,7
+Miami,5.412,19,57,semi-permanent,2,2,960,450,3,335,7
+Imola,4.909,19,63,permanent,1,1,720,300,4,315,5
+Monaco,3.337,19,78,street,0,0,510,180,5,290,3
+Barcelona,4.657,14,66,permanent,1,1,1040,410,4,320,6
+Canada,4.361,14,70,semi-permanent,2,2,1180,470,2,335,6
+Red Bull Ring,4.318,10,71,permanent,3,3,900,420,2,330,7
+Silverstone,5.891,18,52,permanent,2,2,770,360,3,325,6
+Spa,7.004,19,44,permanent,2,2,1900,650,2,345,7
+Hungaroring,4.381,14,70,permanent,0,1,790,300,5,310,4
+Zandvoort,4.259,14,72,permanent,0,1,680,280,5,305,4
+Monza,5.793,11,53,permanent,3,3,1120,540,1,355,8
+Baku,6.003,20,51,street,2,2,2200,700,2,350,7
+Singapore,4.940,19,62,street,0,1,830,260,5,300,4
+COTA,5.513,20,56,permanent,2,2,1200,460,3,330,7
+Mexico,4.304,17,71,permanent,2,2,1200,480,3,350,6
+Interlagos,4.309,15,71,permanent,2,2,900,390,2,330,6
+Las Vegas,6.201,17,50,street,2,2,1900,700,2,350,7
+Qatar,5.419,16,57,permanent,1,1,1060,420,3,325,5
+Abu Dhabi,5.281,16,58,permanent,2,2,1140,450,3,330,6

@@ -1,0 +1,25 @@
+f1_simulator/
+
+main.py
+race_engine.py
+
+models/
+    car.py
+    driver.py
+    track.py
+
+physics/
+    __init__.py
+    fuel.py
+    tyres.py
+    dirty_air.py
+    energy.py
+    weather.py
+
+strategy/
+    pitstop.py
+    overtake.py
+
+tracks/
+    monaco.py
+    silverstone.py
