@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>F1 Simulator (2026) — GitHub Pages</title>
+    <meta
+      name="description"
+      content="Landing page cho dự án F1 Simulator: mô phỏng lap time, tyre degradation, pit stop, safety car, và thay đổi luật F1 2026."
+    />
+
+    <meta property="og:title" content="F1 Simulator (2026)" />
+    <meta
+      property="og:description"
+      content="Mô phỏng lap time, tyre degradation, pit stop, safety car, weather, và luật F1 2026."
+    />
+    <meta property="og:type" content="website" />
+
+    <style>
+      :root {
+        --bg0: #07090f;
+        --bg1: #0b1020;
+        --card: rgba(255, 255, 255, 0.06);
+        --card2: rgba(255, 255, 255, 0.085);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.72);
+        --faint: rgba(255, 255, 255, 0.55);
+        --stroke: rgba(255, 255, 255, 0.12);
+        --brand: #ff2d2d;
+        --brand2: #ff7a00;
+        --ok: #2fe27d;
+        --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg0: #f5f6fb;
+          --bg1: #ffffff;
+          --card: rgba(0, 0, 0, 0.045);
+          --card2: rgba(0, 0, 0, 0.06);
+          --text: rgba(0, 0, 0, 0.88);
+          --muted: rgba(0, 0, 0, 0.64);
+          --faint: rgba(0, 0, 0, 0.48);
+          --stroke: rgba(0, 0, 0, 0.12);
+          --shadow: 0 18px 40px rgba(2, 6, 23, 0.12);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 18% 0%, rgba(255, 45, 45, 0.22), transparent 60%),
+          radial-gradient(1000px 520px at 78% 20%, rgba(255, 122, 0, 0.18), transparent 55%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 28px 18px 60px;
+      }
+
+      header {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--brand), var(--brand2));
+        box-shadow: 0 10px 30px rgba(255, 45, 45, 0.18);
+        position: relative;
+        overflow: hidden;
+      }
+      .logo::after {
+        content: "";
+        position: absolute;
+        inset: -30% -60%;
+        transform: rotate(18deg);
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.22) 45%,
+          transparent 70%
+        );
+        animation: shine 5.6s linear infinite;
+      }
+      @keyframes shine {
+        0% {
+          transform: translateX(-30%) rotate(18deg);
+        }
+        100% {
+          transform: translateX(30%) rotate(18deg);
+        }
+      }
+      .title {
+        line-height: 1.1;
+      }
+      .title strong {
+        display: block;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+      .title span {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: none;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text);
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+        text-decoration: none;
+      }
+      .btn.primary {
+        border: 1px solid rgba(255, 45, 45, 0.35);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 45, 45, 0.26),
+          rgba(255, 122, 0, 0.18)
+        );
+      }
+
+      .hero {
+        margin-top: 18px;
+        padding: 26px 22px;
+        border-radius: var(--radius);
+        border: 1px solid var(--stroke);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: -120px -120px auto auto;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(47, 226, 125, 0.18), transparent 60%);
+        pointer-events: none;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(26px, 4vw, 42px);
+        letter-spacing: -0.4px;
+      }
+      .lead {
+        margin: 12px 0 0;
+        color: var(--muted);
+        max-width: 70ch;
+        line-height: 1.55;
+      }
+
+      .grid {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
+      .card {
+        grid-column: span 12;
+        padding: 18px 16px;
+        border-radius: var(--radius);
+        border: 1px solid var(--stroke);
+        background: var(--card);
+      }
+      @media (min-width: 860px) {
+        .card.half {
+          grid-column: span 6;
+        }
+        .card.third {
+          grid-column: span 4;
+        }
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        letter-spacing: 0.2px;
+        color: var(--text);
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 13px;
+      }
+      ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 13px;
+      }
+      code,
+      pre {
+        font-family: var(--mono);
+      }
+      pre {
+        margin: 10px 0 0;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--stroke);
+        background: var(--card2);
+        overflow: auto;
+        color: var(--text);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .pillrow {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        font-size: 12px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--faint);
+      }
+      .pill.ok {
+        color: rgba(47, 226, 125, 0.95);
+        border-color: rgba(47, 226, 125, 0.22);
+        background: rgba(47, 226, 125, 0.08);
+      }
+
+      footer {
+        margin-top: 26px;
+        color: var(--faint);
+        font-size: 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .sep {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="title">
+            <strong>F1 Simulator (2026)</strong>
+            <span>Landing page chạy trên GitHub Pages</span>
+          </div>
+        </div>
+        <nav class="nav">
+          <a class="btn primary" id="openProject" href="#" title="Mở source code dự án trên GitHub">
+            Mở source
+          </a>
+          <a class="btn" id="openReadme" href="#" title="Đọc mô tả dự án">README</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <h1>Mô phỏng đua F1 với luật 2026.</h1>
+        <p class="lead">
+          Repo này hiện chủ yếu là mô phỏng bằng Python (lap time model, tyre degradation, pit stop,
+          safety car, weather, active aero…). GitHub Pages chỉ host được trang tĩnh, nên đây là
+          landing page để giới thiệu & trỏ link vào source.
+        </p>
+
+        <div class="pillrow" aria-label="Tính năng chính">
+          <span class="pill ok">Active Aero</span>
+          <span class="pill ok">Overtake Mode</span>
+          <span class="pill ok">Boost Button</span>
+          <span class="pill">Tyre degradation</span>
+          <span class="pill">Pit stop loss</span>
+          <span class="pill">Safety Car</span>
+          <span class="pill">Weather</span>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="Thông tin dự án">
+        <article class="card half">
+          <h2>Quick start (local)</h2>
+          <p>
+            Nếu bạn muốn chạy mô phỏng trên máy (Python), dùng các lệnh sau từ thư mục
+            <code>ppj-f1-simulator</code>.
+          </p>
+          <pre><code>cd ppj-f1-simulator
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python -m f1_simulator.main</code></pre>
+        </article>
+
+        <article class="card half">
+          <h2>GitHub Pages</h2>
+          <p>
+            Để Pages hiển thị đúng, chỉ cần có file <code>index.html</code> ở root (chính là trang này).
+            Nếu bạn muốn thay thế bằng web app thật, hãy build ra static files và để ở root hoặc cấu hình
+            Pages trỏ tới thư mục build.
+          </p>
+          <pre><code>Settings → Pages → Build and deployment
+Source: Deploy from a branch
+Branch: main / (root)</code></pre>
+        </article>
+
+        <article class="card third">
+          <h2>Mô hình lap time</h2>
+          <p>Công thức mục tiêu (tóm tắt theo README):</p>
+          <pre><code>LapTime =
+BaseLap
++ TyreDelta
+ + (TyreDeg × TyreAge)
++ TrackConditionModifier
+- ActiveAeroBonus
+- OvertakeModeBonus
+- PitOutTyreBonus</code></pre>
+        </article>
+
+        <article class="card third">
+          <h2>Safety Car</h2>
+          <ul>
+            <li>Tăng lap time ~ 40%</li>
+            <li>Gaps shrink còn ~ 30%</li>
+            <li>Pit dưới SC giảm pit loss ~ 10s</li>
+          </ul>
+        </article>
+
+        <article class="card third">
+          <h2>Luật 2026</h2>
+          <ul>
+            <li>Không còn DRS</li>
+            <li>Active Aero (low-drag trên straight)</li>
+            <li>Overtake Mode khi gap ≤ 1s</li>
+            <li>Power unit ~ 50% điện, ERS recharge tăng</li>
+          </ul>
+        </article>
+      </section>
+
+      <footer>
+        <span>© <span id="y"></span> F1 Simulator</span>
+        <span class="sep">•</span>
+        <span>Host trên GitHub Pages</span>
+      </footer>
+    </div>
+
+    <script>
+      document.getElementById("y").textContent = String(new Date().getFullYear());
+
+      // GitHub Pages không list directory. Nếu đang chạy trên *.github.io,
+      // tự suy ra repo URL để trỏ nút "Mở source" và "README" đúng chỗ.
+      (function () {
+        var host = window.location.hostname || "";
+        var path = window.location.pathname || "/";
+        var openProject = document.getElementById("openProject");
+        var openReadme = document.getElementById("openReadme");
+
+        if (!openProject || !openReadme) return;
+
+        // Default: giữ lại đường dẫn tương đối để vẫn dùng được khi preview local.
+        openProject.href = "./ppj-f1-simulator/";
+        openReadme.href = "./README.md";
+
+        if (!/\.github\.io$/i.test(host)) return;
+
+        var user = host.replace(/\.github\.io$/i, "");
+        var parts = path.split("/").filter(Boolean);
+        var repo = parts.length > 0 ? parts[0] : "";
+        if (!user || !repo) return;
+
+        openProject.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo);
+        openReadme.href =
+          "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo) + "#readme";
+      })();
+    </script>
+  </body>
+</html>
+
