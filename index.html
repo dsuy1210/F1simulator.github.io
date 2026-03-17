@@ -337,6 +337,42 @@
       </section>
 
       <section class="grid" aria-label="Thông tin dự án">
+        <article class="card half" aria-label="Kết nối backend">
+          <h2>Run simulation (Vercel backend)</h2>
+          <p>
+            Dán URL backend Vercel của bạn (ví dụ <code>https://your-app.vercel.app</code>), rồi bấm chạy.
+            Trang sẽ gọi <code>/api/simulate</code> và hiển thị kết quả.
+          </p>
+          <div style="margin-top: 12px; display: grid; gap: 10px">
+            <label style="display: grid; gap: 6px">
+              <span style="font-size: 12px; color: var(--faint)">Backend base URL</span>
+              <input
+                id="backendUrl"
+                placeholder="https://your-app.vercel.app"
+                autocomplete="off"
+                spellcheck="false"
+                style="
+                  width: 100%;
+                  padding: 10px 12px;
+                  border-radius: 12px;
+                  border: 1px solid var(--stroke);
+                  background: rgba(255, 255, 255, 0.04);
+                  color: var(--text);
+                  outline: none;
+                "
+              />
+            </label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+              <button class="btn primary" id="runSim" type="button">Run /api/simulate</button>
+              <button class="btn" id="useLocal" type="button" title="Dùng backend localhost nếu bạn tự chạy">
+                Use localhost:3000
+              </button>
+              <span id="apiStatus" style="font-size: 12px; color: var(--faint)"></span>
+            </div>
+            <pre id="apiOut" aria-label="Kết quả mô phỏng"><code>// output sẽ hiện ở đây…</code></pre>
+          </div>
+        </article>
+
         <article class="card half">
           <h2>Quick start (local)</h2>
           <p>
@@ -431,6 +467,105 @@ BaseLap
         openProject.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo);
         openReadme.href =
           "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo) + "#readme";
+      })();
+
+      (function () {
+        var input = document.getElementById("backendUrl");
+        var runBtn = document.getElementById("runSim");
+        var localBtn = document.getElementById("useLocal");
+        var out = document.getElementById("apiOut");
+        var status = document.getElementById("apiStatus");
+
+        if (!input || !runBtn || !out) return;
+
+        var saved = "";
+        try {
+          saved = window.localStorage.getItem("f1sim_backend_url") || "";
+        } catch (_) {}
+
+        input.value = saved;
+
+        function normalizeBaseUrl(u) {
+          u = String(u || "").trim();
+          if (!u) return "";
+          u = u.replace(/\/+$/, "");
+          return u;
+        }
+
+        async function run() {
+          var base = normalizeBaseUrl(input.value);
+          if (!base) {
+            status.textContent = "Hãy nhập backend URL trước.";
+            return;
+          }
+
+          try {
+            window.localStorage.setItem("f1sim_backend_url", base);
+          } catch (_) {}
+
+          var url = base + "/api/simulate";
+          status.textContent = "Đang gọi " + url + " …";
+          out.textContent = "";
+
+          try {
+            var payload = {
+              seed: 20260317,
+              laps: 15,
+              enableSafetyCar: true,
+              track: {
+                name: "Generic GP",
+                baseLap: 90.0,
+                pitLaneTravelTime: 20.5,
+                pitStopTime: 2.6,
+                trackConditionDry: 0.0,
+                trackConditionWet: 2.0,
+              },
+              weatherChanges: [{ lap: 9, type: "intermediate" }],
+              drivers: [
+                { id: "VER", name: "Verstappen", carPerformance: -0.15, tyreDeg: 0.062, startingTyre: "medium", pitLaps: [8] },
+                { id: "LEC", name: "Leclerc", carPerformance: -0.05, tyreDeg: 0.058, startingTyre: "medium", pitLaps: [9] },
+                { id: "NOR", name: "Norris", carPerformance: 0.0, tyreDeg: 0.06, startingTyre: "soft", pitLaps: [7] },
+                { id: "HAM", name: "Hamilton", carPerformance: 0.08, tyreDeg: 0.055, startingTyre: "hard", pitLaps: [10] },
+              ],
+              regulations2026: {
+                activeAeroEnabled: true,
+                overtakeModeEnabled: true,
+                boostButtonEnabled: true,
+              },
+            };
+
+            var resp = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            var text = await resp.text();
+            var json = null;
+            try {
+              json = JSON.parse(text);
+            } catch (_) {}
+
+            if (!resp.ok) {
+              status.textContent = "Lỗi HTTP " + resp.status + ".";
+              out.textContent = text || "(empty)";
+              return;
+            }
+
+            status.textContent = "OK (" + resp.status + ").";
+            out.textContent = JSON.stringify(json ?? text, null, 2);
+          } catch (e) {
+            status.textContent = "Không gọi được backend (CORS/URL/network).";
+            out.textContent = String(e && e.message ? e.message : e);
+          }
+        }
+
+        runBtn.addEventListener("click", run);
+        if (localBtn) {
+          localBtn.addEventListener("click", function () {
+            input.value = "http://localhost:3000";
+          });
+        }
       })();
     </script>
   </body>
