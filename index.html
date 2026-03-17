@@ -423,7 +423,9 @@ BaseLap
 
         var user = host.replace(/\.github\.io$/i, "");
         var parts = path.split("/").filter(Boolean);
-        var repo = parts.length > 0 ? parts[0] : "";
+        // Project site: https://user.github.io/repo/  -> repo = "repo"
+        // User/Org site: https://user.github.io/      -> repo = "user.github.io"
+        var repo = parts.length > 0 ? parts[0] : host;
         if (!user || !repo) return;
 
         openProject.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo);
