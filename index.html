@@ -160,6 +160,8 @@
         font-weight: 600;
         font-size: 13px;
         color: var(--text);
+        cursor: pointer;
+        font-family: var(--sans);
       }
       .btn:hover {
         background: rgba(255, 255, 255, 0.06);
@@ -340,37 +342,15 @@
         <article class="card half" aria-label="Kết nối backend">
           <h2>Run simulation (Vercel backend)</h2>
           <p>
-            Dán URL backend Vercel của bạn (ví dụ <code>https://your-app.vercel.app</code>), rồi bấm chạy.
-            Trang sẽ gọi <code>/api/simulate</code> và hiển thị kết quả.
+            Bấm nút để chạy mô phỏng trên backend Vercel. Trang sẽ gọi <code>/api/simulate</code> 
+            và hiển thị kết quả race.
           </p>
           <div style="margin-top: 12px; display: grid; gap: 10px">
-            <label style="display: grid; gap: 6px">
-              <span style="font-size: 12px; color: var(--faint)">Backend base URL</span>
-              <input
-                id="backendUrl"
-                placeholder="https://your-app.vercel.app"
-                autocomplete="off"
-                spellcheck="false"
-                style="
-                  width: 100%;
-                  padding: 10px 12px;
-                  border-radius: 12px;
-                  border: 1px solid var(--stroke);
-                  background: rgba(255, 255, 255, 0.04);
-                  color: var(--text);
-                  outline: none;
-                "
-              />
-            </label>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
-              <button class="btn primary" id="runSim" type="button">Run /api/simulate</button>
-              <button class="btn" id="useProduction" type="button" title="Dùng backend Vercel production">
-                Use Production
-              </button>
-              <button class="btn" id="useLocal" type="button" title="Dùng backend localhost nếu bạn tự chạy">
-                Use localhost:3000
-              </button>
-              <span id="apiStatus" style="font-size: 12px; color: var(--faint)"></span>
+              <button class="btn primary" id="runSim" type="button">Run Simulation</button>
+              <button class="btn" id="useProd" type="button">Production</button>
+              <button class="btn" id="useLocalBtn" type="button">Local</button>
+              <span id="status" style="font-size: 12px; color: var(--faint)"></span>
             </div>
             <pre id="apiOut" aria-label="Kết quả mô phỏng"><code>// output sẽ hiện ở đây…</code></pre>
           </div>
@@ -424,12 +404,14 @@ BaseLap
         </article>
 
         <article class="card third">
-          <h2>Luật 2026</h2>
+          <h2>F1 2026 Regulations</h2>
           <ul>
-            <li>Không còn DRS</li>
-            <li>Active Aero (low-drag trên straight)</li>
-            <li>Overtake Mode khi gap ≤ 1s</li>
-            <li>Power unit ~ 50% điện, ERS recharge tăng</li>
+            <li>❌ DRS removed</li>
+            <li>✅ Active Aero (low-drag)</li>
+            <li>✅ Overtake Mode (gap ≤ 1s)</li>
+            <li>✅ Boost Button</li>
+            <li>⚡ 50% electric power</li>
+            <li>🔋 ERS recharge 2x</li>
           </ul>
         </article>
       </section>
@@ -444,8 +426,7 @@ BaseLap
     <script>
       document.getElementById("y").textContent = String(new Date().getFullYear());
 
-      // GitHub Pages không list directory. Nếu đang chạy trên *.github.io,
-      // tự suy ra repo URL để trỏ nút "Mở source" và "README" đúng chỗ.
+      // GitHub Pages support
       (function () {
         var host = window.location.hostname || "";
         var path = window.location.pathname || "/";
@@ -454,7 +435,6 @@ BaseLap
 
         if (!openProject || !openReadme) return;
 
-        // Default: giữ lại đường dẫn tương đối để vẫn dùng được khi preview local.
         openProject.href = "./ppj-f1-simulator/";
         openReadme.href = "./README.md";
 
@@ -462,56 +442,51 @@ BaseLap
 
         var user = host.replace(/\.github\.io$/i, "");
         var parts = path.split("/").filter(Boolean);
-        // Project site: https://user.github.io/repo/  -> repo = "repo"
-        // User/Org site: https://user.github.io/      -> repo = "user.github.io"
         var repo = parts.length > 0 ? parts[0] : host;
         if (!user || !repo) return;
 
         openProject.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo);
-        openReadme.href =
-          "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo) + "#readme";
+        openReadme.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo) + "#readme";
       })();
 
+      // Simulation control
       (function () {
-        var input = document.getElementById("backendUrl");
-        var runBtn = document.getElementById("runSim");
-        var localBtn = document.getElementById("useLocal");
-        var out = document.getElementById("apiOut");
-        var status = document.getElementById("apiStatus");
+        const API_PROD = "https://f1simulatorbackend.vercel.app";
+        const API_LOCAL = "http://localhost:3000";
+        const STORAGE_KEY = "f1sim_backend_url";
 
-        if (!input || !runBtn || !out) return;
+        let apiUrl = localStorage.getItem(STORAGE_KEY) || API_PROD;
 
-        var saved = "";
-        try {
-          saved = window.localStorage.getItem("f1sim_backend_url") || "";
-        } catch (_) {}
+        const runBtn = document.getElementById("runSim");
+        const prodBtn = document.getElementById("useProd");
+        const localBtn = document.getElementById("useLocalBtn");
+        const statusEl = document.getElementById("status");
+        const outEl = document.getElementById("apiOut");
 
-        input.value = saved;
+        if (!runBtn) return;
 
-        function normalizeBaseUrl(u) {
-          u = String(u || "").trim();
-          if (!u) return "";
-          u = u.replace(/\/+$/, "");
-          return u;
+        function updateStatus(msg) {
+          statusEl.textContent = msg;
         }
 
-        async function run() {
-          var base = normalizeBaseUrl(input.value);
-          if (!base) {
-            status.textContent = "Hãy nhập backend URL trước.";
-            return;
-          }
+        function setProduction() {
+          apiUrl = API_PROD;
+          localStorage.setItem(STORAGE_KEY, apiUrl);
+          updateStatus("✅ Production backend");
+        }
 
+        function setLocal() {
+          apiUrl = API_LOCAL;
+          localStorage.setItem(STORAGE_KEY, apiUrl);
+          updateStatus("✅ Local backend");
+        }
+
+        async function runSim() {
           try {
-            window.localStorage.setItem("f1sim_backend_url", base);
-          } catch (_) {}
+            updateStatus("🔄 Running…");
+            outEl.textContent = "";
 
-          var url = base + "/api/simulate";
-          status.textContent = "Đang gọi " + url + " …";
-          out.textContent = "";
-
-          try {
-            var payload = {
+            const payload = {
               seed: 20260317,
               laps: 15,
               enableSafetyCar: true,
@@ -537,46 +512,48 @@ BaseLap
               },
             };
 
-            var resp = await fetch(url, {
+            const res = await fetch(apiUrl + "/api/simulate", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
 
-            var text = await resp.text();
-            var json = null;
-            try {
-              json = JSON.parse(text);
-            } catch (_) {}
-
-            if (!resp.ok) {
-              status.textContent = "Lỗi HTTP " + resp.status + ".";
-              out.textContent = text || "(empty)";
+            if (!res.ok) {
+              updateStatus("❌ Error " + res.status);
+              outEl.textContent = await res.text();
               return;
             }
 
-            status.textContent = "OK (" + resp.status + ").";
-            out.textContent = JSON.stringify(json ?? text, null, 2);
-          } catch (e) {
-            status.textContent = "Không gọi được backend (CORS/URL/network).";
-            out.textContent = String(e && e.message ? e.message : e);
+            const data = await res.json();
+            let text = "🏁 Race Results:\n\n";
+
+            if (data.results && Array.isArray(data.results)) {
+              data.results.forEach((d) => {
+                const gap = d.gapToWinnerSeconds === 0 ? "WINNER" : "+" + d.gapToWinnerSeconds.toFixed(3) + "s";
+                text += `${String(d.position).padStart(2)}. ${d.name.padEnd(14)} ${d.totalTimeSeconds.toFixed(3)}s (${gap})\n`;
+              });
+            } else {
+              text = JSON.stringify(data, null, 2);
+            }
+
+            outEl.textContent = text;
+            updateStatus("✅ Complete (" + apiUrl + ")");
+
+          } catch (err) {
+            updateStatus("❌ " + err.message);
+            outEl.textContent = err.message;
+            console.error(err);
           }
         }
 
-        runBtn.addEventListener("click", run);
-        var prodBtn = document.getElementById("useProduction");
-        if (prodBtn) {
-          prodBtn.addEventListener("click", function () {
-            input.value = "https://f1simulatorbackend.vercel.app";
-          });
-        }
-        if (localBtn) {
-          localBtn.addEventListener("click", function () {
-            input.value = "http://localhost:3000";
-          });
-        }
+        runBtn.addEventListener("click", runSim);
+        if (prodBtn) prodBtn.addEventListener("click", setProduction);
+        if (localBtn) localBtn.addEventListener("click", setLocal);
+
+        // Initialize
+        if (apiUrl === API_PROD) updateStatus("Production backend");
+        else if (apiUrl === API_LOCAL) updateStatus("Local backend");
       })();
     </script>
   </body>
 </html>
-
