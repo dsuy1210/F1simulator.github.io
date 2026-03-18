@@ -16,6 +16,7 @@
       content="Mô phỏng lap time, tyre degradation, pit stop, safety car, weather, và luật F1 2026."
     />
     <meta property="og:type" content="website" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏁</text></svg>" />
 
     <style>
       :root {
@@ -464,8 +465,8 @@
           </div>
 
           <!-- Drivers Table -->
-          <div style="margin-top: 12px;">
-            <h3 style="margin: 0 0 10px; font-size: 13px; color: var(--text);">Drivers (22)</h3>
+          <div style="margin-top: 12px;" aria-label="Drivers input form">
+            <h3 style="margin: 0 0 10px; font-size: 13px; color: var(--text);">Drivers</h3>
             <div class="drivers-scroll">
               <table class="drivers-table">
                 <thead>
@@ -629,51 +630,50 @@ BaseLap
 
       // Initialize drivers table and form
       (function () {
-        const defaultDrivers = [
-          { name: "Verstappen", perf: -0.15, deg: 0.062, tyre: "medium", pits: "8" },
-          { name: "Leclerc", perf: -0.05, deg: 0.058, tyre: "medium", pits: "9" },
-          { name: "Norris", perf: 0.0, deg: 0.06, tyre: "soft", pits: "7" },
-          { name: "Hamilton", perf: 0.08, deg: 0.055, tyre: "hard", pits: "10" },
-          { name: "Sainz", perf: -0.02, deg: 0.058, tyre: "medium", pits: "9" },
-          { name: "Piastri", perf: 0.02, deg: 0.061, tyre: "soft", pits: "7" },
-          { name: "Alonso", perf: 0.05, deg: 0.062, tyre: "medium", pits: "8" },
-          { name: "Stroll", perf: 0.12, deg: 0.065, tyre: "hard", pits: "10" },
-          { name: "Perez", perf: 0.1, deg: 0.064, tyre: "hard", pits: "11" },
-          { name: "Tsunoda", perf: 0.08, deg: 0.06, tyre: "medium", pits: "8" },
-          { name: "Gasly", perf: 0.06, deg: 0.061, tyre: "soft", pits: "7" },
-          { name: "Magnussen", perf: 0.15, deg: 0.066, tyre: "hard", pits: "11" },
-          { name: "Hulkenberg", perf: 0.12, deg: 0.063, tyre: "medium", pits: "9" },
-          { name: "Ocon", perf: 0.09, deg: 0.062, tyre: "soft", pits: "7" },
-          { name: "Bottas", perf: 0.14, deg: 0.064, tyre: "medium", pits: "8" },
-          { name: "Zhou", perf: 0.16, deg: 0.065, tyre: "hard", pits: "10" },
-          { name: "Ricciardo", perf: 0.11, deg: 0.062, tyre: "medium", pits: "9" },
-          { name: "Yuki", perf: 0.13, deg: 0.063, tyre: "soft", pits: "7" },
-          { name: "Albon", perf: 0.07, deg: 0.061, tyre: "medium", pits: "8" },
-          { name: "Sargeant", perf: 0.18, deg: 0.067, tyre: "hard", pits: "11" },
-          { name: "Stroll2", perf: 0.14, deg: 0.064, tyre: "soft", pits: "7" },
-          { name: "Colapinto", perf: 0.17, deg: 0.066, tyre: "medium", pits: "9" },
-        ];
-
         const driversBody = document.getElementById("driversTableBody");
         
-        // Generate driver rows
-        defaultDrivers.forEach((d, i) => {
+        // Function to add a new driver row
+        function addDriverRow() {
           const row = document.createElement("tr");
+          const rowCount = driversBody.querySelectorAll("tr").length + 1;
           row.innerHTML = `
-            <td><input type="text" class="driver-name" placeholder="Driver ${i+1}" value="${d.name}" /></td>
-            <td><input type="number" class="driver-perf" value="${d.perf}" step="0.01" /></td>
-            <td><input type="number" class="driver-deg" value="${d.deg}" step="0.001" /></td>
+            <td><input type="text" class="driver-name" placeholder="Driver name" /></td>
+            <td><input type="number" class="driver-perf" value="0.0" step="0.01" /></td>
+            <td><input type="number" class="driver-deg" value="0.06" step="0.001" /></td>
             <td>
               <select class="driver-tyre">
-                <option value="soft" ${d.tyre === "soft" ? "selected" : ""}>Soft</option>
-                <option value="medium" ${d.tyre === "medium" ? "selected" : ""}>Medium</option>
-                <option value="hard" ${d.tyre === "hard" ? "selected" : ""}>Hard</option>
+                <option value="soft">Soft</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
               </select>
             </td>
-            <td><input type="text" class="driver-pits" placeholder="8,12" value="${d.pits}" /></td>
+            <td>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <input type="text" class="driver-pits" placeholder="8,12" style="flex: 1;" />
+                <button class="btn" type="button" onclick="this.closest('tr').remove()" style="padding: 6px 8px; font-size: 11px;">✕</button>
+              </div>
+            </td>
           `;
           driversBody.appendChild(row);
-        });
+        }
+
+        // Add 4 empty rows by default
+        for (let i = 0; i < 4; i++) {
+          addDriverRow();
+        }
+
+        // Add driver button - insert it after the scroll container
+        const scrollContainer = driversBody.closest(".drivers-scroll");
+        if (scrollContainer) {
+          const addBtn = document.createElement("button");
+          addBtn.className = "btn";
+          addBtn.type = "button";
+          addBtn.textContent = "+ Add Driver";
+          addBtn.style.marginTop = "8px";
+          addBtn.style.fontSize = "12px";
+          addBtn.addEventListener("click", addDriverRow);
+          scrollContainer.parentElement.insertBefore(addBtn, scrollContainer.nextElementSibling);
+        }
 
         // Initialize weather section
         function renderWeather() {
