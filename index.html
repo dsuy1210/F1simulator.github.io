@@ -364,6 +364,9 @@
             </label>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
               <button class="btn primary" id="runSim" type="button">Run /api/simulate</button>
+              <button class="btn" id="useProduction" type="button" title="Dùng backend Vercel production">
+                Use Production
+              </button>
               <button class="btn" id="useLocal" type="button" title="Dùng backend localhost nếu bạn tự chạy">
                 Use localhost:3000
               </button>
@@ -561,6 +564,12 @@ BaseLap
         }
 
         runBtn.addEventListener("click", run);
+        var prodBtn = document.getElementById("useProduction");
+        if (prodBtn) {
+          prodBtn.addEventListener("click", function () {
+            input.value = "https://f1simulatorbackend.vercel.app";
+          });
+        }
         if (localBtn) {
           localBtn.addEventListener("click", function () {
             input.value = "http://localhost:3000";
