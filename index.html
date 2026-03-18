@@ -472,8 +472,8 @@
                 <thead>
                   <tr>
                     <th style="width: 25%">Driver Name</th>
-                    <th style="width: 15%">Car Perf (s)</th>
-                    <th style="width: 15%">Tyre Deg</th>
+                    <th style="width: 15%">Time Qualifying</th>
+                    <th style="width: 15%">Tuổi thọ lốp</th>
                     <th style="width: 20%">Start Tyre</th>
                     <th style="width: 25%">Pit Laps</th>
                   </tr>
@@ -638,13 +638,15 @@ BaseLap
           const rowCount = driversBody.querySelectorAll("tr").length + 1;
           row.innerHTML = `
             <td><input type="text" class="driver-name" placeholder="Driver name" /></td>
-            <td><input type="number" class="driver-perf" value="0.0" step="0.01" /></td>
-            <td><input type="number" class="driver-deg" value="0.06" step="0.001" /></td>
+            <td><input type="number" class="driver-qualifying" value="90.0" step="0.01" /></td>
+            <td><input type="number" class="driver-tyre-lifespan" value="95" step="1" /></td>
             <td>
               <select class="driver-tyre">
                 <option value="soft">Soft</option>
                 <option value="medium" selected>Medium</option>
                 <option value="hard">Hard</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="wet">Wet</option>
               </select>
             </td>
             <td>
@@ -748,12 +750,24 @@ BaseLap
 
         function getFormDataPayload() {
           // Get track parameters
+          const baseLap = parseFloat(document.getElementById("baseLap").value) || 90.0;
+          const trackLength = (80.0 / baseLap) * 5.0; // Estimate track length from baseLap (rough estimate: avg F1 track ~5km, avg lap ~85s)
+          
+          // Recommended tyre lifespan by compound (in km) - Pirelli 2026 data
+          const recommendedLifespan = {
+            "soft": 95,
+            "medium": 125,
+            "hard": 180,
+            "intermediate": 135,
+            "wet": 130
+          };
+
           const payload = {
             seed: Math.floor(Math.random() * 1000000),
             laps: parseInt(document.getElementById("numLaps").value) || 15,
             track: {
               name: "Custom GP",
-              baseLap: parseFloat(document.getElementById("baseLap").value) || 90.0,
+              baseLap: baseLap,
               pitLaneTravelTime: parseFloat(document.getElementById("pitLaneTime").value) || 20.5,
               pitStopTime: parseFloat(document.getElementById("pitStopTime").value) || 2.6,
               trackConditionDry: parseFloat(document.getElementById("trackDry").value) || 0.0,
@@ -777,12 +791,19 @@ BaseLap
             const pitsStr = row.querySelector(".driver-pits").value;
             const pitLaps = pitsStr ? pitsStr.split(",").map(x => parseInt(x.trim())).filter(x => !isNaN(x)) : [];
 
+            const tyreCompound = row.querySelector(".driver-tyre").value || "medium";
+            const inputLifespan = parseFloat(row.querySelector(".driver-tyre-lifespan").value) || 125;
+            const recommended = recommendedLifespan[tyreCompound] || 125;
+            
+            // Convert tyre lifespan to tyreDeg: tyreDeg = inputLifespan * trackLength / recommendedLifespan
+            const tyreDeg = (inputLifespan * trackLength) / recommended;
+
             payload.drivers.push({
               id: String.fromCharCode(65 + i), // A, B, C, ...
               name: name,
-              carPerformance: parseFloat(row.querySelector(".driver-perf").value) || 0.0,
-              tyreDeg: parseFloat(row.querySelector(".driver-deg").value) || 0.06,
-              startingTyre: row.querySelector(".driver-tyre").value || "medium",
+              carPerformance: parseFloat(row.querySelector(".driver-qualifying").value) || 90.0,
+              tyreDeg: tyreDeg,
+              startingTyre: tyreCompound,
               pitLaps: pitLaps,
             });
           });
