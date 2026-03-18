@@ -433,33 +433,75 @@
         <article class="card" aria-label="Cấu hình Race Simulator">
           <h2>⚙️ Configuration Race Simulator</h2>
           
-          <!-- Track Parameters -->
+          <!-- Grandprix Info -->
           <div style="margin-top: 12px;">
-            <h3 style="margin: 0 0 10px; font-size: 13px; color: var(--text);">Track Parameters</h3>
+            <h3 style="margin: 0 0 10px; font-size: 13px; color: var(--text);">Grandprix Info</h3>
             <div class="form-row">
-              <div class="form-group">
-                <label>Base Lap (s)</label>
-                <input type="number" id="baseLap" value="90.0" step="0.1" />
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Select Track</label>
+                <select id="trackSelect" style="width: 100%;">
+                  <option value="">-- Select a track --</option>
+                </select>
               </div>
-              <div class="form-group">
-                <label>Pit Lane Time (s)</label>
-                <input type="number" id="pitLaneTime" value="20.5" step="0.1" />
+            </div>
+            <!-- Track Info Display -->
+            <div id="trackInfoDisplay" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid var(--stroke); border-radius: 8px; background: rgba(255,255,255,0.02);">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; font-size: 12px;">
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Length</span>
+                  <div id="trackLength" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Corners</span>
+                  <div id="trackCorners" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Laps</span>
+                  <div id="trackLaps" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Type</span>
+                  <div id="trackType" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Longest Straight</span>
+                  <div id="trackLongest" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
+                <div>
+                  <span style="color: var(--faint); font-weight: 600;">Top Speed</span>
+                  <div id="trackTopSpeed" style="color: var(--text); margin-top: 4px;">-</div>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Pit Stop Time (s)</label>
-                <input type="number" id="pitStopTime" value="2.6" step="0.1" />
-              </div>
-              <div class="form-group">
-                <label>Track Dry (+s)</label>
-                <input type="number" id="trackDry" value="0.0" step="0.1" />
-              </div>
-              <div class="form-group">
-                <label>Track Wet (+s)</label>
-                <input type="number" id="trackWet" value="2.0" step="0.1" />
-              </div>
-              <div class="form-group">
-                <label>Number of Laps</label>
-                <input type="number" id="numLaps" value="15" min="1" max="78" />
+            </div>
+
+            <!-- Editable Track Parameters -->
+            <div style="margin-top: 12px;">
+              <h4 style="margin: 0 0 10px; font-size: 12px; color: var(--muted);">Edit Parameters</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Base Lap (s)</label>
+                  <input type="number" id="baseLap" value="90.0" step="0.1" />
+                </div>
+                <div class="form-group">
+                  <label>Pit Lane Time (s)</label>
+                  <input type="number" id="pitLaneTime" value="20.5" step="0.1" />
+                </div>
+                <div class="form-group">
+                  <label>Pit Stop Time (s)</label>
+                  <input type="number" id="pitStopTime" value="2.6" step="0.1" />
+                </div>
+                <div class="form-group">
+                  <label>Track Dry (+s)</label>
+                  <input type="number" id="trackDry" value="0.0" step="0.1" />
+                </div>
+                <div class="form-group">
+                  <label>Track Wet (+s)</label>
+                  <input type="number" id="trackWet" value="2.0" step="0.1" />
+                </div>
+                <div class="form-group">
+                  <label>Number of Laps</label>
+                  <input type="number" id="numLaps" value="15" min="1" max="78" />
+                </div>
               </div>
             </div>
           </div>
@@ -626,6 +668,83 @@ BaseLap
 
         openProject.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo);
         openReadme.href = "https://github.com/" + encodeURIComponent(user) + "/" + encodeURIComponent(repo) + "#readme";
+      })();
+
+      // Track Data (from CSV)
+      const TRACKS_DATA = [
+        { name: "Albert Park", length_km: 5.303, corners: 16, laps: 58, track_type: "semi-permanent", longest_straight_m: 850, top_speed_kmh: 325 },
+        { name: "Shanghai", length_km: 5.451, corners: 16, laps: 56, track_type: "permanent", longest_straight_m: 1170, top_speed_kmh: 335 },
+        { name: "Suzuka", length_km: 5.807, corners: 18, laps: 53, track_type: "permanent", longest_straight_m: 900, top_speed_kmh: 320 },
+        { name: "Bahrain", length_km: 5.412, corners: 15, laps: 57, track_type: "permanent", longest_straight_m: 1090, top_speed_kmh: 330 },
+        { name: "Jeddah", length_km: 6.174, corners: 27, laps: 50, track_type: "street", longest_straight_m: 1000, top_speed_kmh: 340 },
+        { name: "Miami", length_km: 5.412, corners: 19, laps: 57, track_type: "semi-permanent", longest_straight_m: 960, top_speed_kmh: 335 },
+        { name: "Imola", length_km: 4.909, corners: 19, laps: 63, track_type: "permanent", longest_straight_m: 720, top_speed_kmh: 315 },
+        { name: "Monaco", length_km: 3.337, corners: 19, laps: 78, track_type: "street", longest_straight_m: 510, top_speed_kmh: 290 },
+        { name: "Barcelona", length_km: 4.657, corners: 14, laps: 66, track_type: "permanent", longest_straight_m: 1040, top_speed_kmh: 320 },
+        { name: "Canada", length_km: 4.361, corners: 14, laps: 70, track_type: "semi-permanent", longest_straight_m: 1180, top_speed_kmh: 335 },
+        { name: "Red Bull Ring", length_km: 4.318, corners: 10, laps: 71, track_type: "permanent", longest_straight_m: 900, top_speed_kmh: 330 },
+        { name: "Silverstone", length_km: 5.891, corners: 18, laps: 52, track_type: "permanent", longest_straight_m: 770, top_speed_kmh: 325 },
+        { name: "Spa", length_km: 7.004, corners: 19, laps: 44, track_type: "permanent", longest_straight_m: 1900, top_speed_kmh: 345 },
+        { name: "Hungaroring", length_km: 4.381, corners: 14, laps: 70, track_type: "permanent", longest_straight_m: 790, top_speed_kmh: 310 },
+        { name: "Zandvoort", length_km: 4.259, corners: 14, laps: 72, track_type: "permanent", longest_straight_m: 680, top_speed_kmh: 305 },
+        { name: "Monza", length_km: 5.793, corners: 11, laps: 53, track_type: "permanent", longest_straight_m: 1120, top_speed_kmh: 355 },
+        { name: "Baku", length_km: 6.003, corners: 20, laps: 51, track_type: "street", longest_straight_m: 2200, top_speed_kmh: 350 },
+        { name: "Singapore", length_km: 4.940, corners: 19, laps: 62, track_type: "street", longest_straight_m: 830, top_speed_kmh: 300 },
+        { name: "COTA", length_km: 5.513, corners: 20, laps: 56, track_type: "permanent", longest_straight_m: 1200, top_speed_kmh: 330 },
+        { name: "Mexico", length_km: 4.304, corners: 17, laps: 71, track_type: "permanent", longest_straight_m: 1200, top_speed_kmh: 350 },
+        { name: "Interlagos", length_km: 4.309, corners: 15, laps: 71, track_type: "permanent", longest_straight_m: 900, top_speed_kmh: 330 },
+        { name: "Las Vegas", length_km: 6.201, corners: 17, laps: 50, track_type: "street", longest_straight_m: 1900, top_speed_kmh: 350 },
+        { name: "Qatar", length_km: 5.419, corners: 16, laps: 57, track_type: "permanent", longest_straight_m: 1060, top_speed_kmh: 325 },
+        { name: "Abu Dhabi", length_km: 5.281, corners: 16, laps: 58, track_type: "permanent", longest_straight_m: 1140, top_speed_kmh: 330 },
+      ];
+
+      // Calculate base lap from track length (rough estimate)
+      function estimateBaseLap(lengthKm) {
+        // Average F1 lap: ~1.5-2 minutes depending on track
+        // Estimate: ~100 km/h average = lengthKm * 36 / 100 seconds
+        // More precise: based on typical data, roughly 15-18 seconds per km
+        return Math.round((lengthKm * 16) * 10) / 10;
+      }
+
+      // Initialize track selection
+      (function () {
+        const trackSelect = document.getElementById("trackSelect");
+        const trackInfoDisplay = document.getElementById("trackInfoDisplay");
+
+        if (!trackSelect) return;
+
+        // Populate dropdown
+        TRACKS_DATA.forEach((track) => {
+          const option = document.createElement("option");
+          option.value = track.name;
+          option.textContent = track.name;
+          trackSelect.appendChild(option);
+        });
+
+        // Handle track selection
+        trackSelect.addEventListener("change", function() {
+          const selectedName = this.value;
+          if (!selectedName) {
+            trackInfoDisplay.style.display = "none";
+            return;
+          }
+
+          const track = TRACKS_DATA.find(t => t.name === selectedName);
+          if (!track) return;
+
+          // Display track info
+          document.getElementById("trackLength").textContent = track.length_km + " km";
+          document.getElementById("trackCorners").textContent = track.corners;
+          document.getElementById("trackLaps").textContent = track.laps;
+          document.getElementById("trackType").textContent = track.track_type;
+          document.getElementById("trackLongest").textContent = track.longest_straight_m + " m";
+          document.getElementById("trackTopSpeed").textContent = track.top_speed_kmh + " km/h";
+          trackInfoDisplay.style.display = "block";
+
+          // Auto-fill form fields
+          document.getElementById("baseLap").value = estimateBaseLap(track.length_km);
+          document.getElementById("numLaps").value = track.laps;
+        });
       })();
 
       // Initialize drivers table and form
